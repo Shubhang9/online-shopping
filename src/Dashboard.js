@@ -1,9 +1,11 @@
 import { AppBar, Button, Fade, Grid, IconButton, Toolbar, Typography, withStyles } from '@material-ui/core';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { initProducts, addToCart, sortAndFilterAdded } from './store/actions/index';
 import CardItem from './CardItem';
 import SortAndFilterUI from './SortAndFilter/SortAndFilterUI';
 import ShoppingCartSharpIcon from '@material-ui/icons/ShoppingCartSharp';
+import { Redirect } from 'react-router';
 
 const classes = theme => ({
     root: {
@@ -25,112 +27,15 @@ const classes = theme => ({
 
 class Dashboard extends Component {
     state = {
-        SortAndFilterData: {
-        },
-        ProductData: [
-            {
-                id: 1,
-                price: 2000,
-                imageURL: "/static/images/cards/contemplative-reptile.jpg",
-                title: "Contemplative Reptile",
-                heading: "Lizard",
-                description: "Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except AntarcticLizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except AntarcticLizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica"
-            },
-            {
-                id: 2,
-                price: 20200,
-                imageURL: "/static/images/cards/contemplative-reptile.jpg",
-                title: "Contemplative Reptile",
-                heading: "Lizard",
-                description: "Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica"
-            },
-            {
-                id: 3,
-                price: 12000,
-                imageURL: "http://wvs.topleftpixel.com/photos/scotia_plaza_tall_stitched.jpg",
-                title: "Contemplative Reptile",
-                heading: "Lizard",
-                description: "Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica"
-            },
-            {
-                id: 4,
-                price: 3000,
-                imageURL: "/static/images/cards/contemplative-reptile.jpg",
-                title: "Contemplative Reptile",
-                heading: "Lizard",
-                description: "Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica"
-            },
-            {
-                id: 5,
-                price: 9000,
-                imageURL: "/static/images/cards/contemplative-reptile.jpg",
-                title: "Contemplative Reptile",
-                heading: "Lizard",
-                description: "Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica"
-            }
-        ],
-        FilteredAndSortedProductData: [
-            {
-                id: 1,
-                price: 2000,
-                imageURL: "/static/images/cards/contemplative-reptile.jpg",
-                title: "Contemplative Reptile",
-                heading: "Lizard",
-                description: "Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except AntarcticLizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except AntarcticLizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica"
-            },
-            {
-                id: 2,
-                price: 20200,
-                imageURL: "/static/images/cards/contemplative-reptile.jpg",
-                title: "Contemplative Reptile",
-                heading: "Lizard",
-                description: "Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica"
-            },
-            {
-                id: 3,
-                price: 12000,
-                imageURL: "http://wvs.topleftpixel.com/photos/scotia_plaza_tall_stitched.jpg",
-                title: "Contemplative Reptile",
-                heading: "Lizard",
-                description: "Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica"
-            },
-            {
-                id: 4,
-                price: 3000,
-                imageURL: "/static/images/cards/contemplative-reptile.jpg",
-                title: "Contemplative Reptile",
-                heading: "Lizard",
-                description: "Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica"
-            },
-            {
-                id: 5,
-                price: 9000,
-                imageURL: "/static/images/cards/contemplative-reptile.jpg",
-                title: "Contemplative Reptile",
-                heading: "Lizard",
-                description: "Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica"
-            }
-        ],
-        FilterFields: [{
-            label: "Price",
-            name: "price",
-            text: {
-                all: "having any name",
-                singular: "having names containing",
-                plural: "having names containing"
-            },
-            type: "numberRange"
-        }],
-        Cart: {
-        }
+        id:-1,
+        gotoCart: false
     }
-
+    componentDidMount = () => {
+        this.props.initProducts();
+    }
     handleChange = (data) => {
-        console.log({
-            data
-        });
         console.log('dashboard handle change');
-        var filteredAndSortedProductData = [...this.state.ProductData];
+        var filteredAndSortedProductData = [...this.props.productData];
         var dataKeys = Object.keys(data);
         if (dataKeys.length > 1) {
             for (var i = 0; i < dataKeys.length; i++) {
@@ -163,14 +68,11 @@ class Dashboard extends Component {
                 });
             }
         }
-        this.setState({
-            SortAndFilterData: data,
-            FilteredAndSortedProductData: filteredAndSortedProductData
-        });
+        this.props.sortAndFilterAdded(data, filteredAndSortedProductData);
     }
 
     filterBy = (data, key, value) => {
-        if (this.state.FilterFields.filter(field => field.name === key)[0].type === 'numberRange' && value.to && value.from) {
+        if (this.props.filterFields.filter(field => field.name === key)[0].type === 'numberRange' && value.to && value.from) {
             return data.filter(dataValue => {
                 return dataValue[key] >= value.from && dataValue[key] <= value.to;
             });
@@ -182,26 +84,46 @@ class Dashboard extends Component {
         return data;
     }
 
+    setId = (id) => {
+        this.setState({
+            id:id
+        });
+    }
+
+    gotoCart = () => {
+        this.setState({
+            gotoCart: true
+        });
+    }
     render() {
+        console.log(this.props.filteredAndSortedProductData);
+        console.log(this.props.productData);
         const classes = this.props.classes;
-        const productData = this.state.FilteredAndSortedProductData.map(productData => {
+        const productData = this.props.filteredAndSortedProductData.map(productData => {
             var handleCartItemChange = (id, value) => {
-                this.setState({
-                    Cart: Object.assign(this.state.Cart, { [id]: value })
-                });
+                this.props.addToCart({ ...this.props.cart, [id]: value });
             }
             return (
                 <Fade in timeout={500}>
                     <Grid item style={{ margin: 10 }}>
                         <CardItem
                             {...productData}
+                            setId={this.setId}
                             onChange={handleCartItemChange}
-                            number={(this.state.Cart[productData.id] ? this.state.Cart[productData.id] : 0)}
+                            number={(this.props.cart[productData.id] ? this.props.cart[productData.id] : 0)}
                         />
                     </Grid>
                 </Fade>
             )
         });
+        if (this.state.id !== -1)
+            return (
+                <Redirect push to={'/product/'+this.state.id}></Redirect>
+            );
+        if (this.state.gotoCart)
+            return (
+                <Redirect push to={'/cart'}></Redirect>
+            );
         return (
             <div>
                 <AppBar position="static">
@@ -209,7 +131,7 @@ class Dashboard extends Component {
                         <Typography variant="h6" className={classes.title}>
                             Online Shopping
                         </Typography>
-                        <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu" onClick={() => { window.location = '/cart' }}>
+                        <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu" onClick={this.gotoCart}>
                             <ShoppingCartSharpIcon />
                         </IconButton>
                         <Button color="inherit">Logout</Button>
@@ -219,8 +141,8 @@ class Dashboard extends Component {
                     Our Products
                 </Typography>
                 <SortAndFilterUI
-                    data={this.state.SortAndFilterData}
-                    fields={this.state.FilterFields}
+                    data={this.props.sortAndFilterData}
+                    fields={this.props.filterFields}
                     onChange={this.handleChange}
                     className={classes.SortAndFilter}
                 />
@@ -232,6 +154,8 @@ class Dashboard extends Component {
     }
 }
 
+
+
 const mapStateToProps = state => {
     return {
         sortAndFilterData: state.products.SortAndFilterData,
@@ -241,4 +165,13 @@ const mapStateToProps = state => {
         cart: state.products.Cart,
     }
 }
-export default connect(mapStateToProps)(withStyles(classes)(Dashboard));
+
+const mapDispatchToProps = dispatch => {
+    return {
+        initProducts: () => dispatch(initProducts()),
+        sortAndFilterAdded: (sortAndFilterData, filteredAndSortedProductData) => dispatch(sortAndFilterAdded(sortAndFilterData, filteredAndSortedProductData)),
+        addToCart: (cart) => dispatch(addToCart(cart)),
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(classes)(Dashboard));

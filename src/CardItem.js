@@ -1,4 +1,6 @@
 import { Box, Card, CardActionArea, CardContent, CardMedia, Container, makeStyles, Typography } from '@material-ui/core';
+import { useState } from 'react';
+import { Redirect } from 'react-router';
 import CounterButtons from './CounterButtons';
 const useStyles = makeStyles({
     root: {
@@ -11,10 +13,11 @@ const useStyles = makeStyles({
 });
 
 export default function CardItem(props) {
+
     const classes = useStyles();
     return (
         <Card className={classes.root}>
-            <CardActionArea onClick={() => { window.location = '/product' }}>
+            <CardActionArea onClick={() => props.setId(props.id)}>
                 <CardMedia
                     className={classes.media}
                     image={props.imageURL}

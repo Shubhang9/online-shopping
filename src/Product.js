@@ -1,19 +1,49 @@
 import { AppBar, Button, Card, CardMedia, Container, Fade, Grid, IconButton, makeStyles, Toolbar, Typography } from '@material-ui/core';
 import HomeSharpIcon from '@material-ui/icons/HomeSharp';
 import Pagination from '@material-ui/lab/Pagination';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
 import CounterButtons from './CounterButtons';
 import ShoppingCartSharpIcon from '@material-ui/icons/ShoppingCartSharp';
+import { initProduct, addToCart } from './store/actions/index';
+import React from 'react';
+import { Redirect } from 'react-router';
 
-export default function Product() {
+
+const mapStateToProps = state => {
+    return {
+        product: state.product.ProductData,
+        cart: state.products.Cart
+    }
+}
+
+const mapDispatchToProps = dispatch => {
+    return {
+        initProduct: (id) => dispatch(initProduct(id)),
+        addToCart: (cart) => dispatch(addToCart(cart))
+    }
+}
+
+function Product(props) {
     const [page, setPage] = useState(0);
     const handleChange = (event, value) => {
         setPage(value - 1);
     };
-    const [counter, setCounter] = useState(0);
-    const onChange = (event, value) => {
-        setCounter(value);
-    };
+
+    const [gotoCart, setgotoCart] = useState(false);
+    const gotoCartFn = () => {
+        setgotoCart(true);
+    }
+
+    const [gotoHome, setgotoHome] = useState(false);
+    const gotoHomeFn = () => {
+        setgotoHome(true);
+    }
+
+    useEffect(()=>{
+        props.initProduct(props.match.params.id);
+    },[]);
+
     const useStyles = makeStyles({
         someRoot: {
             display: 'flex',
@@ -59,22 +89,24 @@ export default function Product() {
         price: {
             marginLeft: 10
         },
-        containerRoot:{
+        containerRoot: {
             margin: 0,
             padding: 0
         }
 
     });
     const classes = useStyles();
-    const mediaURLs = [
-        "http://wvs.topleftpixel.com/photos/scotia_plaza_tall_stitched.jpg",
-        "/static/images/cards/contemplative-reptile.jpg",
-        "/static/images/cards/contemplative-reptile.jpg",
-        "/static/images/cards/contemplative-reptile.jpg",
-        "/static/images/cards/contemplative-reptile.jpg",
-        "https://images.ctfassets.net/hrltx12pl8hq/3MbF54EhWUhsXunc5Keueb/60774fbbff86e6bf6776f1e17a8016b4/04-nature_721703848.jpg?fit=fill&w=480&h=270"
-    ];
-    console.log(mediaURLs[page]);
+    console.log('props.product');
+    
+    if (gotoCart)
+        return (
+            <Redirect push to={'/cart'}></Redirect>
+        );
+
+    if (gotoHome)
+        return (
+            <Redirect push to={'/dashboard'}></Redirect>
+        );
     return (
         <div>
             <AppBar position="static">
@@ -82,12 +114,12 @@ export default function Product() {
                     <Typography variant="h6" className={classes.title}>
                         Online Shopping
                     </Typography>
-                    <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu" onClick={() => { window.location = '/dashboard' }}>
+                    <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu" onClick={gotoHomeFn}>
                         <HomeSharpIcon />
                     </IconButton>
-                    <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu" onClick={() => { window.location = '/cart' }}>
-                        <ShoppingCartSharpIcon />
-                    </IconButton>
+                        <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu" onClick={gotoCartFn}>
+                            <ShoppingCartSharpIcon />
+                        </IconButton>
                     <Button color="inherit">Logout</Button>
                 </Toolbar>
             </AppBar>
@@ -100,8 +132,8 @@ export default function Product() {
                         <Card className={classes.cardRoot}>
                             <CardMedia
                                 className={classes.media}
-                                src={mediaURLs[page]}
-                                title='hi'
+                                src={props.product.mediaURLS?props.product.mediaURLS[page]:null}
+                                title={props.product.title}
                                 component="img"
                             />
                         </Card>
@@ -116,21 +148,22 @@ export default function Product() {
                             Description
                         </Typography>
                         <Typography variant="body2" color="textSecondary" className={classes.description}>
-                            Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica
-                            Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica
-                            Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica
+                            {props.product.description}
                         </Typography>
-                        <Container classes={{root:classes.containerRoot}} style={{display:'flex'}}>
-                            <Container style={{display:'inline', paddingTop: 10}}>
+                        <Container classes={{ root: classes.containerRoot }} style={{ display: 'flex' }}>
+                            <Container style={{ display: 'inline', paddingTop: 10 }}>
                                 <Typography variant="h6" color="textPrimary" className={classes.priceHeading} display="inline">
                                     Price:
                                 </Typography>
                                 <Typography variant="body1" color="textSecondary" className={classes.price} display="inline">
-                                        2000
+                                    {props.product.price}
                                 </Typography>
                             </Container>
-                            <Container style={{display:'inline', textAlign: 'right'}}>
-                                <CounterButtons onChange={onChange} number={counter} id={1}/>
+                            <Container style={{ display: 'inline', textAlign: 'right' }}>
+                                <CounterButtons 
+                                onChange={(id, value) => { props.addToCart({ ...props.cart, [id]: value }); }} 
+                                number={props && props.cart[props.match.params.id] ? props.cart[props.match.params.id] : 0} 
+                                id={props.match.params.id} />
                             </Container>
                         </Container>
                     </Grid>
@@ -139,3 +172,5 @@ export default function Product() {
         </div >
     );
 }
+
+export default connect(mapStateToProps, mapDispatchToProps)((Product));

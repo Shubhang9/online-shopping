@@ -14,6 +14,7 @@ class CounterButtons extends React.Component {
     this.props.onChange(this.props.id, this.props.number - 1);
   };
   render() {
+    console.log(this.props.number);
     const displayCounter = this.props.number > 0;
     return (
       <CardActions style={{ justifyContent: 'space-between', placeContent: 'flex-end' }}>

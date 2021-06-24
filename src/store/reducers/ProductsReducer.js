@@ -1,8 +1,9 @@
 import * as actionTypes from '../actionTypes';
 
-const initialState ={
+const initialState = {
     SortAndFilterData: {},
     ProductData: [],
+    ProductMap: {},
     FilteredAndSortedProductData: [],
     FilterFields: [{
         label: "Price",
@@ -18,13 +19,25 @@ const initialState ={
     }
 };
 
-const ProductsReducer = (state=initialState, action) => {
-    switch(action.type){
+const ProductsReducer = (state = initialState, action) => {
+    switch (action.type) {
         case actionTypes.INIT_PRODUCTS:
             return {
                 ...state,
                 ProductData: action.products,
+                ProductMap: action.productMap,
                 FilteredAndSortedProductData: action.products
+            }
+        case actionTypes.SORT_FILTER_ADDED:
+            return {
+                ...state,
+                SortAndFilterData: action.sortAndFilterData,
+                FilteredAndSortedProductData: action.filteredAndSortedProductData
+            }
+        case actionTypes.ADD_TO_CART:
+            return {
+                ...state,
+                Cart: action.cart
             }
         default:
             return state;

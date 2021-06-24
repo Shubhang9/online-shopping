@@ -7,9 +7,11 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import ProductsReducer from './store/reducers/ProductsReducer';
+import ProductReducer from './store/reducers/ProductReducer';
 
 const combinedReducers = combineReducers({
-  products:ProductsReducer
+  products: ProductsReducer,
+  product: ProductReducer
 });
 
 const store = createStore(combinedReducers, applyMiddleware(thunk));

@@ -26,9 +26,7 @@ function App() {
           <Route exact path="/cart">
             <Cart/>
           </Route>
-          <Route exact path="/product">
-            <Product/>
-          </Route>
+          <Route exact path="/product/:id" component={Product}/>
         </Switch>
       </Router>
   );

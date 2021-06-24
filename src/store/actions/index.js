@@ -1,3 +1,9 @@
 export {
-    initProducts
-} from './ProductActions'
+    initProducts,
+    sortAndFilterAdded,
+    addToCart
+} from './ProductsActions';
+
+export {
+    initProduct,
+} from './ProductActions';
